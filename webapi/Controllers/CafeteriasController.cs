@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using webapi.Models;
+using webapi.Repositories;
 
 namespace webapi.Controllers
 {
@@ -13,111 +15,43 @@ namespace webapi.Controllers
     [ApiController]
     public class CafeteriasController : ControllerBase
     {
-        private readonly CafeteriaContext _context;
+        private readonly ICafeteria _Cafeteria;
 
-        public CafeteriasController(CafeteriaContext context)
+        public CafeteriasController(ICafeteria CafeteriaRepository)
         {
-            _context = context;
+            _Cafeteria = CafeteriaRepository;
         }
 
-        // GET: api/Cafeterias
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cafeteria>>> GetCafeterias()
-        {
-          if (_context.Cafeterias == null)
-          {
-              return NotFound();
-          }
-            return await _context.Cafeterias.ToListAsync();
-        }
-
-        // GET: api/Cafeterias/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Cafeteria>> GetCafeteria(int id)
-        {
-          if (_context.Cafeterias == null)
-          {
-              return NotFound();
-          }
-            var cafeteria = await _context.Cafeterias.FindAsync(id);
-
-            if (cafeteria == null)
-            {
-                return NotFound();
-            }
-
-            return cafeteria;
-        }
-
-        // PUT: api/Cafeterias/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCafeteria(int id, Cafeteria cafeteria)
-        {
-            if (id != cafeteria.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(cafeteria).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CafeteriaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Cafeterias
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Cafeteria>> PostCafeteria(Cafeteria cafeteria)
+        public async Task<IActionResult> Create(Cafeteria Cafeteria)
         {
-          if (_context.Cafeterias == null)
-          {
-              return Problem("Entity set 'CafeteriaContext.Cafeterias'  is null.");
-          }
-            _context.Cafeterias.Add(cafeteria);
-            await _context.SaveChangesAsync();
+            var id = await _Cafeteria.Create(Cafeteria);
 
-            return CreatedAtAction("GetCafeteria", new { id = cafeteria.Id }, cafeteria);
+            return new JsonResult(id.ToString());
         }
 
-        // DELETE: api/Cafeterias/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var Cafeteria = await _Cafeteria.Get(ObjectId.Parse(id));
+
+            return new JsonResult(Cafeteria);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, Cafeteria Cafeteria)
+        {
+            var result = await _Cafeteria.Update(ObjectId.Parse(id), Cafeteria);
+
+            return new JsonResult(result);
+        }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCafeteria(int id)
+        public async Task<IActionResult> Delete(string id)
         {
-            if (_context.Cafeterias == null)
-            {
-                return NotFound();
-            }
-            var cafeteria = await _context.Cafeterias.FindAsync(id);
-            if (cafeteria == null)
-            {
-                return NotFound();
-            }
+            var result = await _Cafeteria.Delete(ObjectId.Parse(id));
 
-            _context.Cafeterias.Remove(cafeteria);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool CafeteriaExists(int id)
-        {
-            return (_context.Cafeterias?.Any(e => e.Id == id)).GetValueOrDefault();
+            return new JsonResult(result);
         }
     }
 }
