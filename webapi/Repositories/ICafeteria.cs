@@ -10,6 +10,7 @@ namespace webapi.Repositories
 
         // Read
         Task<Cafeteria> Get(ObjectId objectId);
+        Task<IEnumerable<Cafeteria>> Get();
 
         // Update
         Task<bool> Update(ObjectId objectId, Cafeteria Student);

@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using webapi.Models;
+using webapi.Repositories;
 
 namespace webapi.Controllers
 {
@@ -13,111 +15,51 @@ namespace webapi.Controllers
     [ApiController]
     public class FacturasController : ControllerBase
     {
-        private readonly FacturaContext _context;
+        private readonly IFactura _context;
 
-        public FacturasController(FacturaContext context)
+        public FacturasController(IFactura context)
         {
             _context = context;
         }
 
-        // GET: api/Facturas
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Factura>>> GetTodoFacturas()
-        {
-          if (_context.TodoFacturas == null)
-          {
-              return NotFound();
-          }
-            return await _context.TodoFacturas.ToListAsync();
-        }
-
-        // GET: api/Facturas/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Factura>> GetFactura(int id)
-        {
-          if (_context.TodoFacturas == null)
-          {
-              return NotFound();
-          }
-            var factura = await _context.TodoFacturas.FindAsync(id);
-
-            if (factura == null)
-            {
-                return NotFound();
-            }
-
-            return factura;
-        }
-
-        // PUT: api/Facturas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFactura(int id, Factura factura)
-        {
-            if (id != factura.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(factura).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!FacturaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Facturas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Factura>> PostFactura(Factura factura)
+        public async Task<IActionResult> Create(Factura Factura)
         {
-          if (_context.TodoFacturas == null)
-          {
-              return Problem("Entity set 'FacturaContext.TodoFacturas'  is null.");
-          }
-            _context.TodoFacturas.Add(factura);
-            await _context.SaveChangesAsync();
+            var id = await _context.Create(Factura);
 
-            return CreatedAtAction("GetFactura", new { id = factura.Id }, factura);
+            return new JsonResult(id.ToString());
         }
 
-        // DELETE: api/Facturas/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var Factura = await _context.Get(ObjectId.Parse(id));
+
+            return new JsonResult(Factura);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var Factura = await _context.Get();
+
+            return new JsonResult(Factura);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, Factura Factura)
+        {
+            var result = await _context.Update(ObjectId.Parse(id), Factura);
+
+            return new JsonResult(result);
+        }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFactura(int id)
+        public async Task<IActionResult> Delete(string id)
         {
-            if (_context.TodoFacturas == null)
-            {
-                return NotFound();
-            }
-            var factura = await _context.TodoFacturas.FindAsync(id);
-            if (factura == null)
-            {
-                return NotFound();
-            }
+            var result = await _context.Delete(ObjectId.Parse(id));
 
-            _context.TodoFacturas.Remove(factura);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool FacturaExists(int id)
-        {
-            return (_context.TodoFacturas?.Any(e => e.Id == id)).GetValueOrDefault();
+            return new JsonResult(result);
         }
     }
 }

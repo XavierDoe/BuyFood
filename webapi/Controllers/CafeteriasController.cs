@@ -38,6 +38,14 @@ namespace webapi.Controllers
             return new JsonResult(Cafeteria);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var Cafeteria = await _Cafeteria.Get();
+
+            return new JsonResult(Cafeteria);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, Cafeteria Cafeteria)
         {

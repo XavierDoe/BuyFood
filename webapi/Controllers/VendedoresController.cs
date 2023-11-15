@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using webapi.Models;
+using webapi.Repositories;
 
 namespace webapi.Controllers
 {
@@ -13,111 +15,51 @@ namespace webapi.Controllers
     [ApiController]
     public class VendedoresController : ControllerBase
     {
-        private readonly VendedorContext _context;
+        private readonly IVendedor _context;
 
-        public VendedoresController(VendedorContext context)
+        public VendedoresController(IVendedor context)
         {
             _context = context;
         }
 
-        // GET: api/Vendedores
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Vendedor>>> GetVendedores()
-        {
-          if (_context.Vendedores == null)
-          {
-              return NotFound();
-          }
-            return await _context.Vendedores.ToListAsync();
-        }
-
-        // GET: api/Vendedores/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Vendedor>> GetVendedor(int id)
-        {
-          if (_context.Vendedores == null)
-          {
-              return NotFound();
-          }
-            var vendedor = await _context.Vendedores.FindAsync(id);
-
-            if (vendedor == null)
-            {
-                return NotFound();
-            }
-
-            return vendedor;
-        }
-
-        // PUT: api/Vendedores/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutVendedor(int id, Vendedor vendedor)
-        {
-            if (id != vendedor.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(vendedor).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!VendedorExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Vendedores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Vendedor>> PostVendedor(Vendedor vendedor)
+        public async Task<IActionResult> Create(Vendedor Vendedor)
         {
-          if (_context.Vendedores == null)
-          {
-              return Problem("Entity set 'VendedorContext.Vendedores'  is null.");
-          }
-            _context.Vendedores.Add(vendedor);
-            await _context.SaveChangesAsync();
+            var id = await _context.Create(Vendedor);
 
-            return CreatedAtAction("GetVendedor", new { id = vendedor.Id }, vendedor);
+            return new JsonResult(id.ToString());
         }
 
-        // DELETE: api/Vendedores/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var Vendedor = await _context.Get(ObjectId.Parse(id));
+
+            return new JsonResult(Vendedor);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var Vendedor = await _context.Get();
+
+            return new JsonResult(Vendedor);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, Vendedor Vendedor)
+        {
+            var result = await _context.Update(ObjectId.Parse(id), Vendedor);
+
+            return new JsonResult(result);
+        }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVendedor(int id)
+        public async Task<IActionResult> Delete(string id)
         {
-            if (_context.Vendedores == null)
-            {
-                return NotFound();
-            }
-            var vendedor = await _context.Vendedores.FindAsync(id);
-            if (vendedor == null)
-            {
-                return NotFound();
-            }
+            var result = await _context.Delete(ObjectId.Parse(id));
 
-            _context.Vendedores.Remove(vendedor);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool VendedorExists(int id)
-        {
-            return (_context.Vendedores?.Any(e => e.Id == id)).GetValueOrDefault();
+            return new JsonResult(result);
         }
     }
 }

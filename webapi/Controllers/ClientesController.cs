@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using webapi.Models;
+using webapi.Repositories;
 
 namespace webapi.Controllers
 {
@@ -13,111 +15,51 @@ namespace webapi.Controllers
     [ApiController]
     public class ClientesController : ControllerBase
     {
-        private readonly ClienteContext _context;
+        private readonly ICliente _context;
 
-        public ClientesController(ClienteContext context)
+        public ClientesController(ICliente context)
         {
             _context = context;
         }
 
-        // GET: api/Clientes
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes()
-        {
-          if (_context.Clientes == null)
-          {
-              return NotFound();
-          }
-            return await _context.Clientes.ToListAsync();
-        }
-
-        // GET: api/Clientes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Cliente>> GetCliente(int id)
-        {
-          if (_context.Clientes == null)
-          {
-              return NotFound();
-          }
-            var cliente = await _context.Clientes.FindAsync(id);
-
-            if (cliente == null)
-            {
-                return NotFound();
-            }
-
-            return cliente;
-        }
-
-        // PUT: api/Clientes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCliente(int id, Cliente cliente)
-        {
-            if (id != cliente.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(cliente).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ClienteExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Clientes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Cliente>> PostCliente(Cliente cliente)
+        public async Task<IActionResult> Create(Cliente Cliente)
         {
-          if (_context.Clientes == null)
-          {
-              return Problem("Entity set 'ClienteContext.Clientes'  is null.");
-          }
-            _context.Clientes.Add(cliente);
-            await _context.SaveChangesAsync();
+            var id = await _context.Create(Cliente);
 
-            return CreatedAtAction("GetCliente", new { id = cliente.Id }, cliente);
+            return new JsonResult(id.ToString());
         }
 
-        // DELETE: api/Clientes/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var Cliente = await _context.Get(ObjectId.Parse(id));
+
+            return new JsonResult(Cliente);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var Cliente = await _context.Get();
+
+            return new JsonResult(Cliente);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, Cliente Cliente)
+        {
+            var result = await _context.Update(ObjectId.Parse(id), Cliente);
+
+            return new JsonResult(result);
+        }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCliente(int id)
+        public async Task<IActionResult> Delete(string id)
         {
-            if (_context.Clientes == null)
-            {
-                return NotFound();
-            }
-            var cliente = await _context.Clientes.FindAsync(id);
-            if (cliente == null)
-            {
-                return NotFound();
-            }
+            var result = await _context.Delete(ObjectId.Parse(id));
 
-            _context.Clientes.Remove(cliente);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool ClienteExists(int id)
-        {
-            return (_context.Clientes?.Any(e => e.Id == id)).GetValueOrDefault();
+            return new JsonResult(result);
         }
     }
 }

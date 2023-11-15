@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using webapi.Models;
+using webapi.Repositories;
 
 namespace webapi.Controllers
 {
@@ -13,111 +15,50 @@ namespace webapi.Controllers
     [ApiController]
     public class ProductosController : ControllerBase
     {
-        private readonly ProductoContext _context;
+        private readonly ProductoI _context;
 
-        public ProductosController(ProductoContext context)
+        public ProductosController(ProductoI context)
         {
             _context = context;
         }
-
-        // GET: api/Productos
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Producto>>> GetTodoProductos()
-        {
-          if (_context.TodoProductos == null)
-          {
-              return NotFound();
-          }
-            return await _context.TodoProductos.ToListAsync();
-        }
-
-        // GET: api/Productos/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Producto>> GetProducto(int id)
-        {
-          if (_context.TodoProductos == null)
-          {
-              return NotFound();
-          }
-            var producto = await _context.TodoProductos.FindAsync(id);
-
-            if (producto == null)
-            {
-                return NotFound();
-            }
-
-            return producto;
-        }
-
-        // PUT: api/Productos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProducto(int id, Producto producto)
-        {
-            if (id != producto.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(producto).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Productos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Producto>> PostProducto(Producto producto)
+        public async Task<IActionResult> Create(Producto Producto)
         {
-          if (_context.TodoProductos == null)
-          {
-              return Problem("Entity set 'ProductoContext.TodoProductos'  is null.");
-          }
-            _context.TodoProductos.Add(producto);
-            await _context.SaveChangesAsync();
+            var id = await _context.Create(Producto);
 
-            return CreatedAtAction("GetProducto", new { id = producto.Id }, producto);
+            return new JsonResult(id.ToString());
         }
 
-        // DELETE: api/Productos/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var Producto = await _context.Get(ObjectId.Parse(id));
+
+            return new JsonResult(Producto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var Producto = await _context.Get();
+
+            return new JsonResult(Producto);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, Producto Producto)
+        {
+            var result = await _context.Update(ObjectId.Parse(id), Producto);
+
+            return new JsonResult(result);
+        }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProducto(int id)
+        public async Task<IActionResult> Delete(string id)
         {
-            if (_context.TodoProductos == null)
-            {
-                return NotFound();
-            }
-            var producto = await _context.TodoProductos.FindAsync(id);
-            if (producto == null)
-            {
-                return NotFound();
-            }
+            var result = await _context.Delete(ObjectId.Parse(id));
 
-            _context.TodoProductos.Remove(producto);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool ProductoExists(int id)
-        {
-            return (_context.TodoProductos?.Any(e => e.Id == id)).GetValueOrDefault();
+            return new JsonResult(result);
         }
     }
 }

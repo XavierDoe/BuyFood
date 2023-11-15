@@ -1,12 +1,18 @@
-﻿namespace webapi.Models;
+﻿using MongoDB.Bson;
+
+namespace webapi.Models;
 
 public class Factura
 {
-    public int Id { get; set; }
+    public ObjectId Id { get; set; }
     public DateOnly fechaVenta { get; set; }
     public string? nombreCliente { get; set; }
-    public int IdProducto { get; set; }
-    public int IdCafeteria { get; set; }
-    public int IdPedido { get; set; }
-
+    public string? IdProducto { get; set; }
+    public string? IdCafeteria { get; set; }
+    public string? IdPedido { get; set; }
+    public string IdFactura => IdVac(Id);
+    public String IdVac(ObjectId id)
+    {
+        return id.ToString();
+    }
 }
