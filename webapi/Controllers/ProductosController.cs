@@ -11,7 +11,7 @@ using webapi.Repositories;
 
 namespace webapi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/[controller]")]
     [ApiController]
     public class ProductosController : ControllerBase
     {
