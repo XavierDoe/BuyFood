@@ -15,9 +15,9 @@ namespace webapi.Controllers
     [ApiController]
     public class ProductosController : ControllerBase
     {
-        private readonly ProductoI _context;
+        private readonly IProducto _context;
 
-        public ProductosController(ProductoI context)
+        public ProductosController(IProducto context)
         {
             _context = context;
         }

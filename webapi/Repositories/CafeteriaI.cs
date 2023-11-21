@@ -43,6 +43,7 @@ namespace webapi.Repositories
             var filter = Builders<Cafeteria>.Filter.Eq(c => c.Id, objectId);
             var update = Builders<Cafeteria>.Update
                 .Set(c => c.Name, Cafeteria.Name)
+                .Set(c => c.Correo, Cafeteria.Correo)
                 .Set(c => c.AdminId, Cafeteria.AdminId);
             var result = await _Cafeteria.UpdateOneAsync(filter, update);
 
