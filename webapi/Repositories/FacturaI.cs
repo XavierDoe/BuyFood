@@ -44,8 +44,8 @@ namespace webapi.Repositories
             var update = Builders<Factura>.Update
                 .Set(c => c.fechaVenta, Factura.fechaVenta)
                 .Set(c => c.nombreCliente, Factura.nombreCliente)
-                .Set(c => c.IdProducto, Factura.IdProducto)
                 .Set(c => c.IdCafeteria, Factura.IdCafeteria)
+                .Set(c => c.estado, Factura.estado)
                 .Set(c => c.IdPedido, Factura.IdPedido);
             var result = await _Factura.UpdateOneAsync(filter, update);
 

@@ -8,6 +8,8 @@ public class Pedido
     public double Total { get; set; }
     public string? IdCafeteria { get; set; }
     public string? IdCliente { get; set; }
+    public string? estado { get; set; }
+    public List<string>? IdProducto { get; set; }
     public string? IdVendedor { get; set; }
     public string IdPedido => IdVac(Id);
     public String IdVac(ObjectId id)

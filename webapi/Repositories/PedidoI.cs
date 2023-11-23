@@ -45,6 +45,8 @@ namespace webapi.Repositories
                 .Set(c => c.FechaCompra, Pedido.FechaCompra)
                 .Set(c => c.IdCafeteria, Pedido.IdCafeteria)
                 .Set(c => c.IdCliente, Pedido.IdCliente)
+                .Set(c => c.IdProducto, Pedido.IdProducto)
+                .Set(c => c.estado, Pedido.estado)
                 .Set(c => c.IdVendedor, Pedido.IdVendedor)
                 .Set(c => c.Total, Pedido.Total);
             var result = await _Pedido.UpdateOneAsync(filter, update);
